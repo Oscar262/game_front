@@ -1,6 +1,7 @@
 package org.game;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -8,6 +9,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.game.oauth.controllers.OauthController;
+import org.game.utils.Config;
 import org.game.utils.FileUtils;
 import org.game.utils.JwtOutput;
 
@@ -31,36 +33,48 @@ public class Main extends Application {
         loadingStage.show();
 
         new Thread(() -> {
-            URL url = getClass().getResource("file.txt");
+            URL url = getClass().getResource("token.txt");
             boolean haveToken = false;
             JwtOutput jwtOutput = new JwtOutput();
+            FileUtils.FileToken token = null;
             if (url != null) {
-                FileUtils.FileToken token = FileUtils.readFileToken();
+                token = FileUtils.readFileToken();
                 if (token.getExpiredDate().isAfter(LocalDateTime.now()))
                     haveToken = true;
             }
             if (haveToken) {
-                //TODO: llamar a /home
+                jwtOutput = OauthController.home(token.getToken());
             } else {
                 jwtOutput = OauthController.singn();
             }
-            if (jwtOutput.getStatus() == 200)
-                System.out.println();
-            else if (jwtOutput.getStatus() == 401)
-                System.out.println();
-
+            if (jwtOutput.getStatus() == 200) {
+                FileUtils.saveFileToken(jwtOutput);
+                Config.ACCESS_TOKEN = jwtOutput.getAccessToken();
+                String path = "images/login 2.jpg";
+                Platform.runLater(() -> nextWindow(path));
+            } else if (jwtOutput.getStatus() == 401) {
+                String path = "images/login 1.png";
+                Platform.runLater(() -> nextWindow(path));
+            }
         }).start();
 
 
     }
 
-    private void showHomeScreen() {
-        // Configurar y mostrar la ventana principal
-        StackPane mainPane = new StackPane();
-        Scene mainScene = new Scene(mainPane, 800, 600); // Tamaño de la ventana principal
-        //primaryStage.setTitle("Main Application");
-        //primaryStage.setScene(mainScene);
-        //primaryStage.show();
+    private void nextWindow(String path) {
+        Stage stage = new Stage();
+        stage.initStyle(StageStyle.TRANSPARENT);
+        stage.setTitle("Nueva Ventana");
+        stage.setWidth(1400);
+        stage.setHeight(800);
+
+        Image loadingImage = new Image(getClass().getResourceAsStream(path));
+        ImageView imageView = new ImageView(loadingImage);
+        StackPane loadingPane = new StackPane(imageView);
+        Scene loadingScene = new Scene(loadingPane, javafx.scene.paint.Color.TRANSPARENT);
+
+        stage.setScene(loadingScene);
+        stage.show();
     }
 
     public static void main(String[] args) {

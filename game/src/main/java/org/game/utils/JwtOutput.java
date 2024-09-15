@@ -1,5 +1,6 @@
 package org.game.utils;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ public class JwtOutput {
     private String lastname;
 
     @JsonProperty("expired_date")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime expiredDate;
 
     private String message;

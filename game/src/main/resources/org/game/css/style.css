@@ -1,0 +1,8 @@
+.text-field {
+    -fx-background-color: #f0f0f0; /* Fondo gris claro */
+    -fx-text-fill: #333333;        /* Texto gris oscuro */
+    -fx-border-color: #cccccc;     /* Borde gris claro */
+    -fx-border-radius: 5;          /* Esquinas redondeadas */
+    -fx-padding: 10;               /* Espaciado interno */
+    -fx-font-size: 14px;           /* Tamaño de fuente */
+}
