@@ -15,10 +15,13 @@ module org.game {
     requires com.fasterxml.jackson.datatype.jsr310;
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
+    requires java.desktop;
 
 
     opens org.game to javafx.fxml;
     opens org.game.oauth to com.google.gson;
     exports org.game;
+    exports org.game.launcher;
+    opens org.game.launcher to javafx.fxml;
 
 }

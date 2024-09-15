@@ -1,8 +1,47 @@
-.text-field {
-    -fx-background-color: #f0f0f0; /* Fondo gris claro */
-    -fx-text-fill: #333333;        /* Texto gris oscuro */
-    -fx-border-color: #cccccc;     /* Borde gris claro */
-    -fx-border-radius: 5;          /* Esquinas redondeadas */
-    -fx-padding: 10;               /* Espaciado interno */
-    -fx-font-size: 14px;           /* Tamaño de fuente */
+/* styles.css */
+#startButton {
+    -fx-background-color: linear-gradient(#46ded5, #46de9d);
+    -fx-background-radius: 30;
+    -fx-background-insets: 0;
+    -fx-text-fill: #654b00;
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-padding: 20px;
+    -fx-cursor: hand;
+    -fx-border-color: #2E7D32;
+    -fx-border-radius: 30;
+    -fx-translate-y: -100px;
+    -fx-translate-x: 100px;
+}
+
+.controlButton {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+    -fx-translate-y: -380px;
+}
+
+#closeButton {
+    -fx-translate-x: 673px;
+}
+
+#closeButton:hover {
+    -fx-background-color: rgb(213, 38, 38, 0.8);
+}
+
+
+#minimizeButton:hover {
+    -fx-background-color: rgb(216, 216, 216, 0.8);
+}
+
+#minimizeButton {
+    -fx-translate-x: 623px;
+}
+
+#startButton:hover {
+    -fx-background-color: linear-gradient(#ffd65b, #e68400);
+    -fx-text-fill: #000000;
 }

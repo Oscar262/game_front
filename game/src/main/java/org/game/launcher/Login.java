@@ -1,8 +1,10 @@
-package org.game;
+package org.game.launcher;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
@@ -13,23 +15,39 @@ import org.game.utils.Config;
 import org.game.utils.FileUtils;
 import org.game.utils.JwtOutput;
 
+import javax.swing.*;
 import java.net.URL;
 import java.time.LocalDateTime;
 
-public class Main extends Application {
-
+public class Login extends Application {
     @Override
-    public void start(Stage loadingStage) {
+    public void start(Stage stage) throws Exception {
         // Crear y mostrar la pantalla de carga
-        Image loadingImage = new Image(getClass().getResourceAsStream("images/744006.png"));
+        Image loadingImage = new Image(getClass().getResourceAsStream("/org/game/images/login 1.png"));
         ImageView imageView = new ImageView(loadingImage);
         StackPane loadingPane = new StackPane(imageView);
-        Scene loadingScene = new Scene(loadingPane, javafx.scene.paint.Color.TRANSPARENT); // Tamaño de la pantalla de carga
 
-        loadingStage = new Stage();
-        loadingStage.initStyle(StageStyle.TRANSPARENT);
-        loadingStage.setScene(loadingScene);
-        loadingStage.show();
+        Button start = new Button("Iniciar");
+        start.setId("startButton");
+        Button close = new Button("X");
+        close.setId("closeButton");
+        close.getStyleClass().add("controlButton");
+        Button minimize = new Button("_");
+        minimize.setId("minimizeButton");
+        minimize.getStyleClass().add("controlButton");
+        loadingPane.getChildren().addAll(start, close, minimize);
+
+
+        String css = getClass().getResource("/org/game/css/style.css").toExternalForm();
+
+        StackPane.setAlignment(start, Pos.CENTER_LEFT);
+        Scene loadingScene = new Scene(loadingPane, javafx.scene.paint.Color.TRANSPARENT);
+        loadingScene.getStylesheets().add(css);
+        stage.setHeight(800.0);
+        stage.setWidth(1400.0);
+        stage.initStyle(StageStyle.TRANSPARENT);
+        stage.setScene(loadingScene);
+        stage.show();
 
         new Thread(() -> {
             URL url = getClass().getResource("token.txt");
@@ -42,41 +60,24 @@ public class Main extends Application {
                     haveToken = true;
             }
             if (haveToken) {
-                jwtOutput = OauthController.home(token.getToken());
+          //      jwtOutput = OauthController.home(token.getToken());
             } else {
-                jwtOutput = OauthController.singn();
+             //   jwtOutput = OauthController.singn();
             }
             if (jwtOutput.getStatus() == 200) {
                 FileUtils.saveFileToken(jwtOutput);
                 Config.ACCESS_TOKEN = jwtOutput.getAccessToken();
                 String path = "images/login 2.jpg";
-                Platform.runLater(() -> nextWindow(path));
+                //Platform.runLater(() -> nextWindow(path));
             } else if (jwtOutput.getStatus() == 401) {
                 String path = "images/login 1.png";
-                Platform.runLater(() -> nextWindow(path));
+                //Platform.runLater(() -> nextWindow(path));
             }
         }).start();
-
-
-    }
-
-    private void nextWindow(String path) {
-        Stage stage = new Stage();
-        stage.initStyle(StageStyle.TRANSPARENT);
-        stage.setTitle("Nueva Ventana");
-        stage.setWidth(1400);
-        stage.setHeight(800);
-
-        Image loadingImage = new Image(getClass().getResourceAsStream(path));
-        ImageView imageView = new ImageView(loadingImage);
-        StackPane loadingPane = new StackPane(imageView);
-        Scene loadingScene = new Scene(loadingPane, javafx.scene.paint.Color.TRANSPARENT);
-
-        stage.setScene(loadingScene);
-        stage.show();
     }
 
     public static void main(String[] args) {
         launch(args);
     }
+
 }
