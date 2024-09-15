@@ -8,11 +8,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.game.launcher.Home;
+import org.game.launcher.Login;
 import org.game.oauth.controllers.OauthController;
 import org.game.utils.Config;
 import org.game.utils.FileUtils;
 import org.game.utils.JwtOutput;
 
+import javax.sound.midi.ShortMessage;
 import java.net.URL;
 import java.time.LocalDateTime;
 
@@ -42,19 +45,22 @@ public class Main extends Application {
                     haveToken = true;
             }
             if (haveToken) {
-                jwtOutput = OauthController.home(token.getToken());
+                Home.setAccessToken(token.getToken());
+                Home.launch();
+                //jwtOutput = OauthController.home(token.getToken());
             } else {
+                Login.launch();
                 jwtOutput = OauthController.singn();
             }
-            if (jwtOutput.getStatus() == 200) {
-                FileUtils.saveFileToken(jwtOutput);
-                Config.ACCESS_TOKEN = jwtOutput.getAccessToken();
-                String path = "images/login 2.jpg";
-                Platform.runLater(() -> nextWindow(path));
-            } else if (jwtOutput.getStatus() == 401) {
-                String path = "images/login 1.png";
-                Platform.runLater(() -> nextWindow(path));
-            }
+           // if (jwtOutput.getStatus() == 200) {
+           //     FileUtils.saveFileToken(jwtOutput);
+           //     Config.ACCESS_TOKEN = jwtOutput.getAccessToken();
+           //     String path = "images/login 2.jpg";
+           //     Platform.runLater(() -> nextWindow(path));
+           // } else if (jwtOutput.getStatus() == 401) {
+           //     String path = "images/login 1.png";
+           //     Platform.runLater(() -> nextWindow(path));
+           // }
         }).start();
 
 

@@ -12,15 +12,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.game.oauth.controllers.OauthController;
 import org.game.utils.Config;
 import org.game.utils.FileUtils;
 import org.game.utils.JwtOutput;
 
-import java.net.URL;
-import java.time.LocalDateTime;
-
 public class Home extends Application {
 
+    private static String accessToken;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -123,29 +122,21 @@ public class Home extends Application {
         stage.show();
         loadingScene.getRoot().requestFocus();
 
+
+        registerButton.setOnMouseClicked(e -> {
+            //TODO: crear ventana de de registro
+        });
+
+
         enterArrow.setOnMouseClicked(e -> {
-            URL url = getClass().getResource("token.txt");
-            boolean haveToken = false;
-            JwtOutput jwtOutput = new JwtOutput();
-            FileUtils.FileToken token = null;
-            if (url != null) {
-                token = FileUtils.readFileToken();
-                if (token.getExpiredDate().isAfter(LocalDateTime.now()))
-                    haveToken = true;
-            }
-            if (haveToken) {
-                //      jwtOutput = OauthController.home(token.getToken());
-            } else {
-                //   jwtOutput = OauthController.singn();
-            }
+            JwtOutput jwtOutput = OauthController.home(accessToken);
+
             if (jwtOutput.getStatus() == 200) {
                 FileUtils.saveFileToken(jwtOutput);
                 Config.ACCESS_TOKEN = jwtOutput.getAccessToken();
-                String path = "images/login 2.jpg";
                 //Platform.runLater(() -> nextWindow(path));
-            } else if (jwtOutput.getStatus() == 401) {
-                String path = "images/login 1.png";
-                //Platform.runLater(() -> nextWindow(path));
+            } else {
+                //TODO: falta añadir label con error
             }
         });
     }
@@ -154,6 +145,13 @@ public class Home extends Application {
         launch(args);
     }
 
+    public static String getAccessToken() {
+        return accessToken;
+    }
+
+    public static void setAccessToken(String accessToken) {
+        accessToken = accessToken;
+    }
 }
 
 

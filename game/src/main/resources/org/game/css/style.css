@@ -18,7 +18,7 @@
 
 .arrowButton {
     -fx-padding: 15px 20px;
-    -fx-translate-y: 150px;
+    -fx-translate-y: 175px;
     -fx-translate-x: 150px;
 }
 
@@ -57,7 +57,7 @@
     -fx-text-fill: #df4343;
     -fx-translate-x: 50px;
     -fx-cursor: hand;
-    -fx-translate-y: 225px;
+    -fx-translate-y: 250px;
     -fx-translate-x: 110px;
 }
 
