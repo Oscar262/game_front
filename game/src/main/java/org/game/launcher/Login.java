@@ -29,6 +29,7 @@ public class Login extends Application {
 
         Button start = new Button("Iniciar");
         start.setId("startButton");
+        start.getStyleClass().add("startButton");
         Button close = new Button("X");
         close.setId("closeButton");
         close.getStyleClass().add("controlButton");
@@ -49,7 +50,7 @@ public class Login extends Application {
         stage.setScene(loadingScene);
         stage.show();
 
-        new Thread(() -> {
+        start.setOnMouseClicked(e -> {
             URL url = getClass().getResource("token.txt");
             boolean haveToken = false;
             JwtOutput jwtOutput = new JwtOutput();
@@ -73,7 +74,7 @@ public class Login extends Application {
                 String path = "images/login 1.png";
                 //Platform.runLater(() -> nextWindow(path));
             }
-        }).start();
+        });
     }
 
     public static void main(String[] args) {
