@@ -24,7 +24,7 @@ public class OauthController {
     private static final String url = "http://localhost:8080";
 
     @FXML
-    public static JwtOutput singn() {
+    public static JwtOutput singn(String username, String passwordField) {
         String apiUrl = url + "/signin"; // Reemplaza con tu URL de API
         JwtOutput jwtOutput = new JwtOutput();
         UserInput userInput = new UserInput();

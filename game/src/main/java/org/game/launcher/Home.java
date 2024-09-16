@@ -48,14 +48,13 @@ public class Home extends Application {
         stage.show();
 
 
-
         start.setOnMouseClicked(e -> {
             JwtOutput jwtOutput = OauthController.home(accessToken);
 
             if (jwtOutput.getStatus() == 200) {
                 FileUtils.saveFileToken(jwtOutput);
                 Config.ACCESS_TOKEN = jwtOutput.getAccessToken();
-                //Platform.runLater(() -> nextWindow(path));
+                // TODO: falta añadir llamada a la siguiente pantalla
             } else {
                 //TODO: falta añadir label con error
             }

@@ -12,6 +12,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.game.oauth.controllers.OauthController;
+import org.game.utils.Config;
+import org.game.utils.FileUtils;
+import org.game.utils.JwtOutput;
 
 public class Login extends Application {
 
@@ -122,6 +126,17 @@ public class Login extends Application {
             //TODO: crear ventana de de registro
         });
 
+        enterArrow.setOnMouseClicked(e -> {
+            JwtOutput jwtOutput = OauthController.singn(username.getText(), passwordField.getText());
+
+            if (jwtOutput.getStatus() == 200) {
+                FileUtils.saveFileToken(jwtOutput);
+                Config.ACCESS_TOKEN = jwtOutput.getAccessToken();
+                // TODO: falta añadir llamada a la siguiente pantalla
+            } else {
+                //TODO: falta añadir label con error
+            }
+        });
     }
 
     public static void main(String[] args) {
