@@ -1,7 +1,6 @@
 package org.game;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -11,11 +10,9 @@ import javafx.stage.StageStyle;
 import org.game.launcher.Home;
 import org.game.launcher.Login;
 import org.game.oauth.controllers.OauthController;
-import org.game.utils.Config;
 import org.game.utils.FileUtils;
 import org.game.utils.JwtOutput;
 
-import javax.sound.midi.ShortMessage;
 import java.net.URL;
 import java.time.LocalDateTime;
 
