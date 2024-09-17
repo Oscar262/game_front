@@ -17,6 +17,7 @@ module org.game {
     requires com.fasterxml.jackson.databind;
     requires java.desktop;
     requires jdk.jfr;
+    requires annotations;
 
 
     opens org.game to javafx.fxml;
