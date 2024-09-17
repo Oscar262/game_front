@@ -4,12 +4,11 @@ import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
@@ -42,8 +41,10 @@ public class Login extends Application {
         username.setId("username");
         username.setMaxWidth(300);  // Ancho máximo
         username.setMaxHeight(50);
+        ContextMenu contextMenu = new ContextMenu();
+        username.setContextMenu(contextMenu);
 
-        PasswordField passwordField = getPasswordField("Ingrese su contraseña aquí", "password");
+        PasswordField passwordField = getPasswordField("Ingrese su contraseña aquí", "password", contextMenu);
 
         // Crear el botón con el ícono de ojo
         Button eyeButton = new Button();
@@ -53,7 +54,7 @@ public class Login extends Application {
         eyeButton.setGraphic(eyeIcon);
         eyeButton.setId("eye");
 
-        TextField passwordTextField = createPasswordField("Ingrese su contraseña", "password");
+        TextField passwordTextField = createPasswordField("Ingrese su contraseña", "password", contextMenu);
 
         // Alternar entre PasswordField y TextField
         eyeButtonAction(eyeButton, passwordTextField, passwordField, eyeIcon, eyeClosed, eyeOpen);
@@ -78,10 +79,10 @@ public class Login extends Application {
         eyeButton2.setGraphic(eyeIcon2);
         eyeButton2.setId("eye2");
 
-        PasswordField passwordField2 = getPasswordField("Repita su contraseña", "password2");
+        PasswordField passwordField2 = getPasswordField("Repita su contraseña", "password2", contextMenu);
 
         loadingPane.getChildren().addAll(passwordField, passwordTextField);
-        TextField passwordTextField2 = createPasswordField("Repita su contraseña", "password2");
+        TextField passwordTextField2 = createPasswordField("Repita su contraseña", "password2", contextMenu);
 
         // Alternar entre PasswordField y TextField
         eyeButtonAction(eyeButton2, passwordTextField2, passwordField2, eyeIcon2, eyeClosed2, eyeOpen2);
@@ -94,9 +95,6 @@ public class Login extends Application {
             passwordField2.setText(newText);
         });
 
-        StackPane.setAlignment(passwordField2, Pos.CENTER_LEFT);
-        StackPane.setAlignment(passwordTextField2, Pos.CENTER_LEFT);
-        StackPane.setAlignment(eyeButton2, Pos.CENTER_LEFT);
 
         Button close = new Button("X");
         close.setId("closeButton");
@@ -107,28 +105,23 @@ public class Login extends Application {
         Button enterArrow = new Button("➡");
         enterArrow.setId("arrowButton");
         enterArrow.getStyleClass().add("arrowButton");
-
         Button registerButton = new Button("Registrarse ->");
         registerButton.setId("registerButton");
+
 
         StackPane.setAlignment(enterArrow, Pos.CENTER_LEFT);
         StackPane.setAlignment(imageView, Pos.CENTER_RIGHT);
         StackPane.setAlignment(signin, Pos.CENTER_LEFT);
         StackPane.setAlignment(username, Pos.CENTER_LEFT);
         StackPane.setAlignment(registerButton, Pos.CENTER_LEFT);
+        StackPane.setAlignment(passwordField2, Pos.CENTER_LEFT);
+        StackPane.setAlignment(passwordTextField2, Pos.CENTER_LEFT);
+        StackPane.setAlignment(eyeButton2, Pos.CENTER_LEFT);
+
         loadingPane.getChildren().addAll(enterArrow, close, minimize, signin, username, eyeButton, registerButton);
         String css = getClass().getResource("/org/game/css/style.css").toExternalForm();
 
-        Scene loadingScene = new Scene(loadingPane, javafx.scene.paint.Color.TRANSPARENT);
-        applyContextMenuFilter(loadingPane);
-
-        loadingScene.getStylesheets().add(css);
-        stage.setHeight(800.0);
-        stage.setWidth(1400.0);
-        stage.initStyle(StageStyle.TRANSPARENT);
-        stage.setScene(loadingScene);
-        stage.show();
-        loadingScene.getRoot().requestFocus();
+        createScene(stage, loadingPane, css);
         Button arrow = new Button("➡");
 
         registerButtonAction(registerButton, enterArrow, loadingPane, passwordField2, passwordTextField2, eyeButton2, arrow);
@@ -142,16 +135,33 @@ public class Login extends Application {
         enterArrowRegisterAction(arrow, username, passwordField, passwordField2, loadingPane);
     }
 
-    private void applyContextMenuFilter(javafx.scene.Parent parent) {
+    private void createScene(Stage stage, StackPane loadingPane, String css) {
+        Scene loadingScene = new Scene(loadingPane, javafx.scene.paint.Color.TRANSPARENT);
+        applyContextMenuFilter(loadingPane, loadingScene);
+
+        loadingScene.getStylesheets().add(css);
+        stage.setHeight(800.0);
+        stage.setWidth(1400.0);
+        stage.initStyle(StageStyle.TRANSPARENT);
+        stage.setScene(loadingScene);
+        stage.show();
+        loadingScene.getRoot().requestFocus();
+    }
+
+    private void applyContextMenuFilter(javafx.scene.Parent parent, Scene scene) {
         parent.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
             if (event.getButton() == MouseButton.SECONDARY) {
                 event.consume();  // Evita que aparezca el menú contextual
             }
         });
-
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.C && event.isControlDown()) {
+                event.consume();  // Evita que Ctrl+C funcione
+            }
+        });
         for (javafx.scene.Node child : parent.getChildrenUnmodifiable()) {
             if (child instanceof javafx.scene.Parent) {
-                applyContextMenuFilter((javafx.scene.Parent) child);
+                applyContextMenuFilter((javafx.scene.Parent) child, scene);
             }
         }
     }
@@ -185,7 +195,7 @@ public class Login extends Application {
                 loadingPane.getChildren().add(error);
             }
             else {
-                JwtOutput jwtOutput = OauthController.singn(username.getText(), passwordField.getText());
+                JwtOutput jwtOutput = OauthController.register(username.getText(), passwordField.getText());
 
                 if (jwtOutput.getStatus() == 200) {
                     FileUtils.saveFileToken(jwtOutput);
@@ -216,7 +226,7 @@ public class Login extends Application {
         });
     }
 
-    private static PasswordField getPasswordField(String text, String id) {
+    private static PasswordField getPasswordField(String text, String id, ContextMenu contextMenu) {
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText(text);
         passwordField.getStyleClass().add("textField"); // Aplica la clase CSS
@@ -224,11 +234,12 @@ public class Login extends Application {
         passwordField.setId(id);
         passwordField.setMaxWidth(300);  // Ancho máximo
         passwordField.setMaxHeight(50);
+        passwordField.setContextMenu(contextMenu);
         return passwordField;
 
     }
 
-    private static TextField createPasswordField(String text, String id) {
+    private static TextField createPasswordField(String text, String id, ContextMenu contextMenu) {
         TextField passwordTextField = new TextField();
         passwordTextField.setVisible(false);
         passwordTextField.setPromptText(text);
@@ -237,6 +248,7 @@ public class Login extends Application {
         passwordTextField.setId(id);
         passwordTextField.setMaxWidth(300);  // Ancho máximo
         passwordTextField.setMaxHeight(50);
+        passwordTextField.setContextMenu(contextMenu);
         return passwordTextField;
     }
 

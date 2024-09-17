@@ -22,7 +22,7 @@
     -fx-translate-x: 150px;
 }
 
-.label {
+#signin {
      -fx-background-color: transparent;
      -fx-text-fill: #690dc1;
      -fx-font-size: 40px;
