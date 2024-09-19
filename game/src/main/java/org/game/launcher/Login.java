@@ -26,7 +26,7 @@ public class Login extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         // Crear y mostrar la pantalla de carga
-        Image loadingImage = new Image(getClass().getResourceAsStream("/org/game/images/login 2.jpg"));
+        Image loadingImage = new Image(getClass().getResourceAsStream("/org/game/images/login 1.png"));
         ImageView imageView = new ImageView(loadingImage);
         StackPane loadingPane = new StackPane(imageView);
         imageView.setFitHeight(800.0);
@@ -99,9 +99,11 @@ public class Login extends Application {
         Button close = new Button("X");
         close.setId("closeButton");
         close.getStyleClass().add("controlButton");
+        close.setOnMouseClicked(e -> stage.close());
         Button minimize = new Button("_");
         minimize.setId("minimizeButton");
         minimize.getStyleClass().add("controlButton");
+        minimize.setOnMouseClicked(e -> stage.setIconified(true));
         Button enterArrow = new Button("➡");
         enterArrow.setId("arrowButton");
         enterArrow.getStyleClass().add("arrowButton");

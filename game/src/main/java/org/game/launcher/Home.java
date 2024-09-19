@@ -30,9 +30,11 @@ public class Home extends Application {
         Button close = new Button("X");
         close.setId("closeButton");
         close.getStyleClass().add("controlButton");
+        close.setOnMouseClicked(e -> stage.close());
         Button minimize = new Button("_");
         minimize.setId("minimizeButton");
         minimize.getStyleClass().add("controlButton");
+        minimize.setOnMouseClicked(e -> stage.setIconified(true));
         loadingPane.getChildren().addAll(start, close, minimize);
 
 
