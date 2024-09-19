@@ -20,7 +20,7 @@ public class Home extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         // Crear y mostrar la pantalla de carga
-        Image loadingImage = new Image(getClass().getResourceAsStream("/org/game/images/login 1.png"));
+        Image loadingImage = new Image(getClass().getResourceAsStream("/org/game/images/home.jpeg"));
         ImageView imageView = new ImageView(loadingImage);
         StackPane loadingPane = new StackPane(imageView);
 
