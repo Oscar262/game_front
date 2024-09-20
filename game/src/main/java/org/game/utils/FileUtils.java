@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 public class FileUtils {
 
     public static void saveFileToken(JwtOutput jwtOutput){
-        try (FileWriter fileWriter = new FileWriter("src/main/resources/org/game/token.txt")){
+        try (FileWriter fileWriter = new FileWriter("game/src/main/resources/org/game/token.txt")){
             fileWriter.append(jwtOutput.getAccessToken());
             fileWriter.append("\n");
             fileWriter.append(String.valueOf(jwtOutput.getExpiredDate()));
@@ -19,7 +19,7 @@ public class FileUtils {
 
     public static FileToken readFileToken() {
         FileToken fileToken = new FileToken();
-        try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/org/game/token.txt"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("game/src/main/resources/org/game/token.txt"))) {
             // Leer la única línea del archivo
             List<String> lines = br.lines().collect(Collectors.toList());
 

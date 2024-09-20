@@ -42,12 +42,12 @@ public class Main extends Application {
                 finalLoadingStage.close();
                 URL url = getClass().getResource("token.txt");
                 boolean haveToken = false;
-                JwtOutput jwtOutput = new JwtOutput();
                 FileUtils.FileToken token = null;
                 if (url != null) {
                     token = FileUtils.readFileToken();
-                    if (token.getExpiredDate().isAfter(LocalDateTime.now()))
+                    if (token.getExpiredDate().isAfter(LocalDateTime.now())) {
                         haveToken = true;
+                    }
                 }
                 if (haveToken) {
                     try {
@@ -55,24 +55,13 @@ public class Main extends Application {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    //jwtOutput = OauthController.home(token.getToken());
                 } else {
                     try {
                         login();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    //jwtOutput = OauthController.singn();
                 }
-                // if (jwtOutput.getStatus() == 200) {
-                //     FileUtils.saveFileToken(jwtOutput);
-                //     Config.ACCESS_TOKEN = jwtOutput.getAccessToken();
-                //     String path = "images/login 2.jpg";
-                //     Platform.runLater(() -> nextWindow(path));
-                // } else if (jwtOutput.getStatus() == 401) {
-                //     String path = "images/login 1.png";
-                //     Platform.runLater(() -> nextWindow(path));
-                // }
             });
         }).start();
 

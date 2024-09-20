@@ -126,14 +126,23 @@ public class Login extends Application {
         createScene(stage, loadingPane, css);
         Button arrow = new Button("➡");
 
-        registerButtonAction(registerButton, enterArrow, loadingPane, passwordField2, passwordTextField2, eyeButton2, arrow);
+        Label error = new Label("Error, contraseña o usuario incorrecto");
+        error.setStyle("-fx-padding: 15px 20px;\n" +
+                "    -fx-translate-y: 100px;\n" +
+                "    -fx-translate-x: 45;\n " +
+                "    -fx-text-fill: red;" +
+                "    -fx-font-family: \"Arial\"; " +
+                "    -fx-font-weight: italic;" +
+                "    -fx-font-size: 16px;");
+
+        registerButtonAction(registerButton, enterArrow, loadingPane, passwordField2, passwordTextField2, eyeButton2, arrow, error);
 
         arrow.setId("arrowButton");
         arrow.setStyle("-fx-padding: 15px 20px;\n" +
                 "    -fx-translate-y: 250px;\n" +
                 "    -fx-translate-x: 150px;");
 
-        enterArrowAction(enterArrow, username, passwordField);
+        enterArrowAction(enterArrow, username, passwordField, loadingPane, error);
         enterArrowRegisterAction(arrow, username, passwordField, passwordField2, loadingPane);
     }
 
@@ -168,7 +177,7 @@ public class Login extends Application {
         }
     }
 
-    private static void enterArrowAction(Button enterArrow, TextField username, PasswordField passwordField) {
+    private static void enterArrowAction(Button enterArrow, TextField username, PasswordField passwordField, StackPane loadingPane, Label error) {
         enterArrow.setOnMouseClicked(e -> {
             JwtOutput jwtOutput = OauthController.singn(username.getText(), passwordField.getText());
 
@@ -177,13 +186,16 @@ public class Login extends Application {
                 Config.ACCESS_TOKEN = jwtOutput.getAccessToken();
                 // TODO: falta añadir llamada a la siguiente pantalla
             } else {
-                //TODO: falta añadir label con error
+
+                StackPane.setAlignment(error, Pos.CENTER_LEFT);
+                loadingPane.getChildren().add(error);
             }
         });
     }
 
     private static void enterArrowRegisterAction(Button enterArrow, TextField username, PasswordField passwordField, PasswordField passwordField2, StackPane loadingPane) {
         enterArrow.setOnMouseClicked(e -> {
+            //TODO: falta extender pantalla para añadir todos los campos
             if (!passwordField2.getText().equals(passwordField.getText())) {
                 Label error = new Label("Error, la contraseña debe coincidir");
                 error.setStyle("-fx-padding: 15px 20px;\n" +
@@ -195,8 +207,7 @@ public class Login extends Application {
                         "    -fx-font-size: 16px;");
                 StackPane.setAlignment(error, Pos.CENTER_LEFT);
                 loadingPane.getChildren().add(error);
-            }
-            else {
+            } else {
                 JwtOutput jwtOutput = OauthController.register(username.getText(), passwordField.getText());
 
                 if (jwtOutput.getStatus() == 200) {
@@ -210,8 +221,9 @@ public class Login extends Application {
         });
     }
 
-    private static void registerButtonAction(Button registerButton, Button enterArrow, StackPane loadingPane, PasswordField passwordField2, TextField passwordTextField2, Button eyeButton2, Button arrow) {
+    private static void registerButtonAction(Button registerButton, Button enterArrow, StackPane loadingPane, PasswordField passwordField2, TextField passwordTextField2, Button eyeButton2, Button arrow, Label error) {
         registerButton.setOnMouseClicked(e -> {
+            loadingPane.getChildren().remove(error);
             enterArrow.setDisable(true);
             TranslateTransition transition = new TranslateTransition();
             transition.setDuration(Duration.seconds(1));
