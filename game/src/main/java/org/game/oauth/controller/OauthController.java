@@ -1,4 +1,4 @@
-package org.game.oauth.controllers;
+package org.game.oauth.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,8 +18,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class OauthController {
-    @FXML
-    private Label welcomeText;
 
     private static final String url = "http://localhost:8080";
 

@@ -15,7 +15,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import org.game.oauth.controllers.OauthController;
+import org.game.oauth.controller.OauthController;
 import org.game.utils.Config;
 import org.game.utils.FileUtils;
 import org.game.utils.JwtOutput;

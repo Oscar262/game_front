@@ -18,13 +18,16 @@ module org.game {
     requires java.desktop;
     requires jdk.jfr;
     requires annotations;
+    requires static lombok;
+    requires java.sql;
 
 
     opens org.game to javafx.fxml;
     opens org.game.oauth to com.google.gson;
     exports org.game;
     exports org.game.launcher;
-    exports org.game.character;
     opens org.game.launcher to javafx.fxml;
+    exports org.game.character.model;
+    exports org.game.character.screen;
 
 }
