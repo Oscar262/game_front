@@ -115,3 +115,8 @@
     -fx-background-color: linear-gradient(#ffd65b, #e68400);
     -fx-text-fill: #000000;
 }
+/*
+.root {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #001a4d, #004080);
+}*/
+

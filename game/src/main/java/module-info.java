@@ -24,6 +24,7 @@ module org.game {
     opens org.game.oauth to com.google.gson;
     exports org.game;
     exports org.game.launcher;
+    exports org.game.character;
     opens org.game.launcher to javafx.fxml;
 
 }
