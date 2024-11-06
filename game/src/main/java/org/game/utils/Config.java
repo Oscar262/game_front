@@ -21,19 +21,18 @@ public class Config {
     public static String ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvcy5zYW5hdi4yNkBnbWFpbC5jb20iLCJpYXQiOjE3MzA5MTE4MDgsImV4cCI6MTczMDk5ODIwOH0.7xVVtAcc0Z1xY1saUN7_BmVYJyqrlJh6DlwyXNYt2L3ui7H6HEyVoxln6Lx7XvP_vfDDqsbnmam4Q87vtus8TA";
 
     private static final int NUM_POINTS = 5;
-    private static final double POINT_RADIUS = 10;
-    private static final double OVAL_SCALE_X = 1.5;
+    private static final double POINT_RADIUS = 7;
+    private static final double OVAL_SCALE_X = 2.0;
     private static final double OVAL_SCALE_Y = 0.5;
-    private static final double CIRCLE_SCALE_X = 1.0;
-    private static final double CIRCLE_SCALE_Y = 1.0;
+    private static final double CIRCLE_SCALE_X = 2.5;
+    private static final double CIRCLE_SCALE_Y = 2.5;
 
     public static Image convertByteArrayToImage(byte[] imageData) {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageData);
         return new Image(byteArrayInputStream);
     }
 
-    public static void createProgressBar(StackPane root) {
-        HBox pointBox = new HBox(20);
+    public static Circle[] createProgressBar(StackPane root, HBox pointBox) {
         pointBox.setAlignment(Pos.CENTER);
         Circle[] points = new Circle[NUM_POINTS];
         for (int i = 0; i < NUM_POINTS; i++) {
@@ -44,11 +43,10 @@ public class Config {
             pointBox.getChildren().add(points[i]);
         }
         root.getChildren().add(pointBox);
-        Timeline timeline = createTimeline(points);
-        timeline.play();
+        return points;
     }
 
-    private static Timeline createTimeline(Circle[] points) {
+    public static Timeline createTimeline(Circle[] points) {
         Timeline timeline = new Timeline();
         timeline.setCycleCount(Timeline.INDEFINITE);
 

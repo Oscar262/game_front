@@ -1,30 +1,26 @@
 package org.game.character.screen;
 
-import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.*;
+import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import org.game.character.controller.CharacterController;
 import org.game.character.model.Character;
 import org.game.utils.Config;
+import org.game.utils.Page;
 
 import java.util.List;
 
 public class CharacterList extends Application {
 
+    private int offset = 0;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -39,60 +35,144 @@ public class CharacterList extends Application {
         primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> imageView.setFitWidth(newVal.doubleValue()));
         primaryStage.heightProperty().addListener((obs, oldVal, newVal) -> imageView.setFitHeight(newVal.doubleValue()));
 
-        // Crear el StackPane para colocar el fondo y la cuadrícula de imágenes encima
-        StackPane root = new StackPane(imageView);
 
-        Config.createProgressBar(root);
+        // Crear el StackPane para colocar el fondo
+        StackPane root = new StackPane(imageView);
+        HBox pointBox = new HBox(25);
+
+        Circle[] points = Config.createProgressBar(root, pointBox);
+
+        Timeline timeline = Config.createTimeline(points);
+        timeline.play();
+
+        // Crear un VBox para colocar las filas de los personajes
+        VBox characterVBox = new VBox(25); // 25px de separación entre las filas
+        characterVBox.setAlignment(Pos.CENTER); // Centrar las filas en el VBox
+
+        // Crear márgenes de 75px a cada lado
+        Region leftMargin = new Region();
+        leftMargin.setMinWidth(300);
+        Region rightMargin = new Region();
+        rightMargin.setMinWidth(300);
+
+        // Agregar el VBox al StackPane con márgenes a los lados
+        StackPane.setMargin(characterVBox, new javafx.geometry.Insets(150, 90, 0, 90));
+        root.getChildren().add(characterVBox);
+        //TODO: crear boton de flecha
+        Button start = new javafx.scene.control.Button("Iniciar");
+        start.setId("startButton");
+        start.getStyleClass().add("startButton");
 
         // Cargar personajes en un hilo separado
         new Thread(() -> {
-            try {
-                Thread.sleep(10000L);  // Simular tiempo de carga
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            List<Character> characters = CharacterController.getCharacters(Config.ACCESS_TOKEN);
+            Page<Character> characters = CharacterController.getCharacters(Config.ACCESS_TOKEN, offset);
 
-            // Usar Platform.runLater para actualizar la interfaz de usuario en el hilo principal
             Platform.runLater(() -> {
-                // Mostrar los personajes en la UI
-                showCharacters(root, characters);
+                showCharacters(characterVBox, characters.getData());
+                if (characters.getTotal() < offset + 8)
+                    root.getChildren().remove(start);
+                else
+                    root.getChildren().add(start);
+
+                timeline.stop();
+                root.getChildren().remove(pointBox);
             });
         }).start();
+
+
+        start.setOnMouseClicked(x -> {
+            characterVBox.getChildren().clear();
+            root.getChildren().add(pointBox);
+            new Thread(() -> {
+                offset += 8;
+                Page<Character> characters = CharacterController.getCharacters(Config.ACCESS_TOKEN, offset);
+
+                Platform.runLater(() -> {
+                    showCharacters(characterVBox, characters.getData());
+                    if (characters.getTotal() < offset + 8)
+                        root.getChildren().remove(start);
+
+                    timeline.stop();
+                    root.getChildren().remove(pointBox);
+                });
+            }).start();
+        });
 
         // Configurar la escena y el escenario
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
+        primaryStage.setFullScreen(true);
         primaryStage.show();
-
-        // Comenzar la animación de los puntos
     }
 
-    // Método para mostrar los personajes en la interfaz
-    private void showCharacters(StackPane root, List<Character> characters) {
+    private void showCharacters(VBox characterVBox, List<Character> characters) {
         if (characters == null) {
             System.out.println("Error al obtener personajes de la API");
             return;
         }
 
-        // Crear el GridPane para las imágenes de los personajes
-        VBox vbox = new VBox();
-        for (int i = 0; i < characters.size(); i++) {
-            Character character = characters.get(i);
+        // Número fijo de columnas (4 columnas por fila)
+        int columns = 4;
+        int rows = 2;  // Siempre dos filas
+        int row = 0;
+        int column = 0;
+
+        // Crear un GridPane para organizar las imágenes en filas y columnas
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(45);  // Espacio horizontal entre imágenes
+        gridPane.setVgap(25);  // Espacio vertical entre imágenes
+
+        // Establecer las restricciones para las filas (asegurar que ambas filas tengan la misma altura)
+        for (int i = 0; i < rows; i++) {
+            RowConstraints rowConstraints = new RowConstraints();
+            rowConstraints.setMinHeight(400);  // Altura fija de 400px para las filas
+            rowConstraints.setMaxHeight(400);  // Altura fija de 400px
+            gridPane.getRowConstraints().add(rowConstraints);
+        }
+
+        // Agregar imágenes al GridPane
+        for (Character character : characters) {
             if (character.getImage() != null) {
-                // Decodificar la imagen desde el byte[] a Image
                 Image characterImage = Config.convertByteArrayToImage(character.getImage());
                 ImageView characterImageView = new ImageView(characterImage);
                 characterImageView.setPreserveRatio(true);
+                characterImageView.setFitHeight(400);  // Tamaño fijo de altura (400px)
 
-                // Posicionar las imágenes de los personajes
-                vbox.getChildren().add(characterImageView);
+                // Colocar la imagen en el GridPane en la posición correspondiente
+                gridPane.add(characterImageView, column, row);
+
+                // Avanzar al siguiente índice de columna
+                column++;
+
+                // Si se han agregado 4 imágenes en la fila, mover a la siguiente fila
+                if (column == columns) {
+                    column = 0;
+                    row++;
+                }
             }
         }
 
-        // Colocar el VBox con los personajes en el StackPane
-        root.getChildren().add(vbox);
+        // Asegurarse de que las celdas vacías se mantengan en el GridPane
+        int totalCells = rows * columns; // Total de celdas que necesitamos: 8
+        int filledCells = characters.size();  // Cuántas celdas están llenas con imágenes
+        int remainingCells = totalCells - filledCells; // Celdas que faltan
+
+        // Llenar las celdas vacías si hay menos de 8 imágenes
+        for (int i = 0; i < remainingCells; i++) {
+            StackPane emptyCell = new StackPane();  // Celdas vacías
+            gridPane.add(emptyCell, column, row);
+
+            column++;  // Avanzar al siguiente espacio en la fila
+            if (column == columns) {  // Si la columna alcanza el límite (4), pasar a la siguiente fila
+                column = 0;
+                row++;
+            }
+        }
+
+        // Agregar el GridPane al VBox
+        characterVBox.getChildren().add(gridPane);
     }
+
 
 
     public static void main(String[] args) {
