@@ -51,9 +51,9 @@ public class CharacterList extends Application {
 
         // Crear márgenes de 75px a cada lado
         Region leftMargin = new Region();
-        leftMargin.setMinWidth(300);
+        leftMargin.setMinWidth(250);
         Region rightMargin = new Region();
-        rightMargin.setMinWidth(300);
+        rightMargin.setMinWidth(250);
 
         // Agregar el VBox al StackPane con márgenes a los lados
         StackPane.setMargin(characterVBox, new javafx.geometry.Insets(150, 90, 0, 90));
@@ -69,7 +69,7 @@ public class CharacterList extends Application {
 
             Platform.runLater(() -> {
                 showCharacters(characterVBox, characters.getData());
-                if (characters.getTotal() < offset + 8)
+                if (characters.getTotal() < offset + 10)
                     root.getChildren().remove(start);
                 else
                     root.getChildren().add(start);
@@ -84,12 +84,12 @@ public class CharacterList extends Application {
             characterVBox.getChildren().clear();
             root.getChildren().add(pointBox);
             new Thread(() -> {
-                offset += 8;
+                offset += 10;
                 Page<Character> characters = CharacterController.getCharacters(Config.ACCESS_TOKEN, offset);
 
                 Platform.runLater(() -> {
                     showCharacters(characterVBox, characters.getData());
-                    if (characters.getTotal() < offset + 8)
+                    if (characters.getTotal() < offset + 10)
                         root.getChildren().remove(start);
 
                     timeline.stop();
@@ -112,7 +112,7 @@ public class CharacterList extends Application {
         }
 
         // Número fijo de columnas (4 columnas por fila)
-        int columns = 4;
+        int columns = 5;
         int rows = 2;  // Siempre dos filas
         int row = 0;
         int column = 0;
@@ -125,8 +125,8 @@ public class CharacterList extends Application {
         // Establecer las restricciones para las filas (asegurar que ambas filas tengan la misma altura)
         for (int i = 0; i < rows; i++) {
             RowConstraints rowConstraints = new RowConstraints();
-            rowConstraints.setMinHeight(400);  // Altura fija de 400px para las filas
-            rowConstraints.setMaxHeight(400);  // Altura fija de 400px
+            rowConstraints.setMaxHeight(400);
+            rowConstraints.setMinHeight(400);// Altura fija de 400px
             gridPane.getRowConstraints().add(rowConstraints);
         }
 
@@ -135,8 +135,9 @@ public class CharacterList extends Application {
             if (character.getImage() != null) {
                 Image characterImage = Config.convertByteArrayToImage(character.getImage());
                 ImageView characterImageView = new ImageView(characterImage);
-                characterImageView.setPreserveRatio(true);
+                //characterImageView.setPreserveRatio(true);
                 characterImageView.setFitHeight(400);  // Tamaño fijo de altura (400px)
+                characterImageView.setFitWidth(256);  // Altura fija de 400px para las filas
 
                 // Colocar la imagen en el GridPane en la posición correspondiente
                 gridPane.add(characterImageView, column, row);
