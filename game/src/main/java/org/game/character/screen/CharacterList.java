@@ -26,7 +26,6 @@ public class CharacterList extends Application {
     private int offset = 0; // Para controlar la paginación
     private boolean isLoading = false; // Evita múltiples cargas simultáneas
 
-
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Configurar la imagen de fondo
@@ -46,26 +45,24 @@ public class CharacterList extends Application {
         Timeline timeline = Config.createTimeline(points);
         timeline.play();
 
-        VBox characterVBox = new VBox(50); // Espaciado entre filas
+        VBox characterVBox = new VBox(75); // Espaciado entre filas
         characterVBox.setAlignment(Pos.TOP_CENTER);
-        //characterVBox.setPrefWidth(800); // Ancho fijo para el contenido
+
         // ScrollPane con fondo transparente
         ScrollPane scrollPane = new ScrollPane(characterVBox);
-        //scrollPane.setPrefHeight(1080);
 
         // Estilo para fondo transparente
         scrollPane.setStyle(
-                "-fx-padding: 10px 50px 10px 175px; /* Padding interno */\n" +
-                        "-fx-background: transparent; " +
+                "-fx-background: transparent; " +
                         "-fx-background-color: transparent; " +
-                        "-fx-border-color: blue;");
+                        "-fx-border-color: transparent;");
+        scrollPane.setFitToWidth(true); // Ajusta el ancho al contenedor
+        scrollPane.setMaxHeight(800); // Altura máxima limitada
 
         // Centrar el ScrollPane en la pantalla
         StackPane.setAlignment(scrollPane, Pos.BOTTOM_CENTER);
-
         characterVBox.setFillWidth(true);
-        scrollPane.setFitToWidth(true); // Ajusta el ancho al contenedor
-        scrollPane.setMaxHeight(800); // Altura máxima limitada
+
         root.getChildren().add(scrollPane);
 
         // Detectar cuando llegamos al final del scroll
@@ -74,7 +71,7 @@ public class CharacterList extends Application {
             if (verticalScrollBar != null) {
                 verticalScrollBar.valueProperty().addListener((obs, oldValue, newValue) -> {
                     if (!isLoading && newValue.doubleValue() == 1.0) { // Al llegar al final
-                        loadMoreCharacters(characterVBox, primaryStage.getWidth(), timeline, pointBox, root);
+                        loadMoreCharacters(characterVBox, scrollPane.getWidth(), timeline, pointBox, root);
                     }
                 });
             }
@@ -82,9 +79,8 @@ public class CharacterList extends Application {
 
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS); // Siempre mostrar la barra vertical
 
-
         // Cargar personajes iniciales
-        loadMoreCharacters(characterVBox, primaryStage.getWidth(), timeline, pointBox, root);
+        loadMoreCharacters(characterVBox, scrollPane.getWidth(), timeline, pointBox, root);
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/org/game/css/style.css").toExternalForm());
@@ -124,29 +120,24 @@ public class CharacterList extends Application {
     }
 
     private void showCharacters(VBox characterVBox, List<Character> characters, double windowWidth, List<Button> charactersButtons) {
-        int columns = 4;
+        // Calcular el número de columnas basándose en el tamaño de la ventana
+        int columns = 4; // Ancho de cada imagen (275px) y el espacio disponible en la ventana
         int row = 0;
         int column = 0;
-        int rows = 1;
 
+        // Crear un GridPane para distribuir las imágenes
         GridPane gridPane = new GridPane();
-//        gridPane.getChildren().clear();  // Limpiar los elementos anteriores
-
+        gridPane.getChildren().clear();
+        // Ajustar el espacio entre las columnas
         double imageWidth = 275;
-        double availableWidth = windowWidth - (columns * imageWidth);
-        double dynamicHGap = availableWidth / (columns + 1);
-        gridPane.setHgap(dynamicHGap - 40);
-        for (int i = 0; i < rows; i++) {
-            RowConstraints rowConstraints = new RowConstraints();
-            rowConstraints.setMaxHeight(500);
-            rowConstraints.setMinHeight(500);
-            gridPane.getRowConstraints().add(rowConstraints);
-        }
-        // Ajustar el espacio vertical entre las filas (margen entre filas)
-        gridPane.setVgap(50); // Por ejemplo, 20 píxeles de margen entre filas
+        gridPane.setHgap(175); // Espacio entre las columnas
 
-        // Asegurarse de que los botones se ajusten a las celdas vacías
-        // Asegurarse de que los botones se ajusten a las celdas vacías
+        // Ajustar el espacio entre las filas
+        gridPane.setVgap(75); // Espacio entre filas, ajusta este valor a lo que necesites
+
+        // Asegurarse de que las celdas del GridPane crezcan
+        //gridPane.setPrefWidth(windowWidth);
+
         for (Character character : characters) {
             if (character.getImage() != null) {
                 Image characterImage = Config.convertByteArrayToImage(character.getImage());
@@ -168,7 +159,8 @@ public class CharacterList extends Application {
                 // Agregar el botón al grid
                 gridPane.add(button, column, row);
 
-                button.setOnMouseClicked(e -> System.out.println(2));
+                button.setOnMouseClicked(e -> System.out.println("Imagen clickeada"));
+
                 column++;
                 if (column == columns) {
                     column = 0;
@@ -177,23 +169,10 @@ public class CharacterList extends Application {
             }
         }
 
-
-        int totalCells = rows * columns;
-        int filledCells = characters.size();
-        int remainingCells = totalCells - filledCells;
-
-        for (int i = 0; i < remainingCells; i++) {
-            StackPane emptyCell = new StackPane();
-            gridPane.add(emptyCell, column, row);
-
-            column++;
-            if (column == columns) {
-                column = 0;
-                row++;
-            }
-        }
-
-        characterVBox.getChildren().add(gridPane);
+        // Asegurarse de que el GridPane siempre llene el espacio disponible
+        HBox hBox = new HBox(gridPane);
+        hBox.setAlignment(Pos.CENTER);
+        characterVBox.getChildren().add(hBox);
     }
 
 
