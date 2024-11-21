@@ -6,6 +6,8 @@ import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollBar;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -21,11 +23,13 @@ import java.util.List;
 
 public class CharacterList extends Application {
 
-    private int offset = 0;
+    private int offset = 0; // Para controlar la paginación
+    private boolean isLoading = false; // Evita múltiples cargas simultáneas
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Cargar la imagen de fondo
+        // Configurar la imagen de fondo
         Image image = new Image(getClass().getResourceAsStream("/org/game/images/characters.jpeg"));
         ImageView imageView = new ImageView(image);
         imageView.setPreserveRatio(true);
@@ -42,102 +46,107 @@ public class CharacterList extends Application {
         Timeline timeline = Config.createTimeline(points);
         timeline.play();
 
-        VBox characterVBox = new VBox(50);
-        characterVBox.setAlignment(Pos.CENTER);
+        VBox characterVBox = new VBox(50); // Espaciado entre filas
+        characterVBox.setAlignment(Pos.TOP_CENTER);
+        //characterVBox.setPrefWidth(800); // Ancho fijo para el contenido
+        // ScrollPane con fondo transparente
+        ScrollPane scrollPane = new ScrollPane(characterVBox);
+        //scrollPane.setPrefHeight(1080);
 
-        Region leftMargin = new Region();
-        leftMargin.setMinWidth(150);
-        Region rightMargin = new Region();
-        rightMargin.setMinWidth(150);
+        // Estilo para fondo transparente
+        scrollPane.setStyle(
+                "-fx-padding: 10px 50px 10px 175px; /* Padding interno */\n" +
+                        "-fx-background: transparent; " +
+                        "-fx-background-color: transparent; " +
+                        "-fx-border-color: blue;");
 
-        StackPane.setMargin(characterVBox, new javafx.geometry.Insets(350, 190, 100, 190));
-        root.getChildren().add(characterVBox);
+        // Centrar el ScrollPane en la pantalla
+        StackPane.setAlignment(scrollPane, Pos.BOTTOM_CENTER);
 
-        Button start = new Button("Iniciar");
-        start.setId("startButton");
-        start.getStyleClass().add("startButton");
+        characterVBox.setFillWidth(true);
+        scrollPane.setFitToWidth(true); // Ajusta el ancho al contenedor
+        scrollPane.setMaxHeight(800); // Altura máxima limitada
+        root.getChildren().add(scrollPane);
 
-        List<Button> charactersButtons = new ArrayList<>();
-
-        new Thread(() -> {
-            Page<Character> characters = CharacterController.getCharacters(Config.ACCESS_TOKEN, offset);
-            Platform.runLater(() -> {
-                showCharacters(characterVBox, characters.getData(), primaryStage.getWidth(), charactersButtons);
-                if (characters.getTotal() < offset + 5)
-                    root.getChildren().remove(start);
-                else
-                    root.getChildren().add(start);
-
-                root.getChildren().addAll(charactersButtons);
-                timeline.stop();
-                root.getChildren().remove(pointBox);
-            });
-        }).start();
-
-        start.setOnMouseClicked(x -> {
-            characterVBox.getChildren().clear();
-            root.getChildren().add(pointBox);
-            new Thread(() -> {
-                offset += 5;
-                Page<Character> characters = CharacterController.getCharacters(Config.ACCESS_TOKEN, offset);
-                root.getChildren().removeAll(charactersButtons);
-
-                Platform.runLater(() -> {
-                    showCharacters(characterVBox, characters.getData(), primaryStage.getWidth(), charactersButtons);
-                    if (characters.getTotal() <= offset + 5)
-                        root.getChildren().remove(start);
-
-                    root.getChildren().addAll(charactersButtons);
-                    timeline.stop();
-                    root.getChildren().remove(pointBox);
+        // Detectar cuando llegamos al final del scroll
+        Platform.runLater(() -> {
+            ScrollBar verticalScrollBar = getVerticalScrollBar(scrollPane);
+            if (verticalScrollBar != null) {
+                verticalScrollBar.valueProperty().addListener((obs, oldValue, newValue) -> {
+                    if (!isLoading && newValue.doubleValue() == 1.0) { // Al llegar al final
+                        loadMoreCharacters(characterVBox, primaryStage.getWidth(), timeline, pointBox, root);
+                    }
                 });
-            }).start();
-        });
-
-        Scene scene = new Scene(root);
-        primaryStage.setScene(scene);
-        primaryStage.setFullScreen(true);
-
-        primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> {
-            if (!characterVBox.getChildren().isEmpty() && characterVBox.getChildren().get(0) instanceof GridPane) {
-                GridPane gridPane = (GridPane) characterVBox.getChildren().get(0);
-                double totalWidth = newVal.doubleValue();
-                double imageWidth = 275; // Ancho fijo de las imágenes
-                int columns = 5; // Número de columnas
-                double availableWidth = totalWidth - (columns * imageWidth);
-                double dynamicHGap = availableWidth / (columns + 1);
-                gridPane.setHgap(dynamicHGap);
             }
         });
 
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS); // Siempre mostrar la barra vertical
+
+
+        // Cargar personajes iniciales
+        loadMoreCharacters(characterVBox, primaryStage.getWidth(), timeline, pointBox, root);
+
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("/org/game/css/style.css").toExternalForm());
+        primaryStage.setScene(scene);
+        primaryStage.setFullScreen(true);
         primaryStage.show();
     }
 
-    private void showCharacters(VBox characterVBox, List<Character> characters, double windowWidth, List<Button> charactersButtons) {
-        if (characters == null) {
-            System.out.println("Error al obtener personajes de la API");
-            return;
-        }
+    private void loadMoreCharacters(VBox characterVBox, double windowWidth, Timeline timeline, HBox points, StackPane root) {
+        isLoading = true; // Marcar como en proceso de carga
 
-        int columns = 5;
-        int rows = 1;
+        new Thread(() -> {
+            Platform.runLater(() -> {
+                if (offset != 0) {
+                    timeline.play();
+                    points.setAlignment(Pos.BOTTOM_CENTER);
+                    root.getChildren().add(points);
+                }
+            });
+
+            Page<Character> characters = CharacterController.getCharacters(Config.ACCESS_TOKEN, offset);
+
+            Platform.runLater(() -> {
+
+                if (characters.getData() != null && !characters.getData().isEmpty()) {
+                    List<Button> charactersButtons = new ArrayList<>();
+                    showCharacters(characterVBox, characters.getData(), windowWidth, charactersButtons);
+                    offset += characters.getData().size(); // Actualizar el offset
+                } else {
+                    System.out.println("No hay más personajes para cargar.");
+                }
+                isLoading = false; // Finalizar carga
+                timeline.stop();
+                root.getChildren().remove(points);
+            });
+        }).start();
+    }
+
+    private void showCharacters(VBox characterVBox, List<Character> characters, double windowWidth, List<Button> charactersButtons) {
+        int columns = 4;
         int row = 0;
         int column = 0;
+        int rows = 1;
 
         GridPane gridPane = new GridPane();
+//        gridPane.getChildren().clear();  // Limpiar los elementos anteriores
+
         double imageWidth = 275;
         double availableWidth = windowWidth - (columns * imageWidth);
         double dynamicHGap = availableWidth / (columns + 1);
-
         gridPane.setHgap(dynamicHGap - 40);
-
         for (int i = 0; i < rows; i++) {
             RowConstraints rowConstraints = new RowConstraints();
             rowConstraints.setMaxHeight(500);
             rowConstraints.setMinHeight(500);
             gridPane.getRowConstraints().add(rowConstraints);
         }
+        // Ajustar el espacio vertical entre las filas (margen entre filas)
+        gridPane.setVgap(50); // Por ejemplo, 20 píxeles de margen entre filas
 
+        // Asegurarse de que los botones se ajusten a las celdas vacías
+        // Asegurarse de que los botones se ajusten a las celdas vacías
         for (Character character : characters) {
             if (character.getImage() != null) {
                 Image characterImage = Config.convertByteArrayToImage(character.getImage());
@@ -146,33 +155,25 @@ public class CharacterList extends Application {
                 characterImageView.setFitWidth(imageWidth);
 
                 Button button = new Button();
-
-// Crear el StackPane para la imagen encima del botón
                 StackPane buttonContent = new StackPane();
-                buttonContent.getChildren().add(characterImageView); // Overlay encima de la imagen del personaje
+                buttonContent.getChildren().add(characterImageView);
 
-// Establecer el StackPane como el gráfico del botón
                 button.setGraphic(buttonContent);
-                button.setStyle("-fx-background-color: transparent;"); // Para hacer el fondo del botón transparente
+                button.setStyle("-fx-background-color: transparent;");
 
-// Imagen que va encima del botón
-                Image overlayImage = new Image(getClass().getResourceAsStream("/org/game/images/1 none.png"));
-                ImageView overlayImageView = new ImageView(overlayImage);
-                overlayImageView.setFitWidth(275);
-                overlayImageView.setFitHeight(500);  // Ajustar tamaño según lo necesites
-                //overlayImageView.setPreserveRatio(true);
+                // Asegurarse de que el botón ocupe todo el espacio disponible
+                GridPane.setHgrow(button, Priority.ALWAYS);
+                GridPane.setVgrow(button, Priority.ALWAYS);
 
-                buttonContent.getChildren().add(overlayImageView);
-
-// Agregar el botón al GridPane
+                // Agregar el botón al grid
                 gridPane.add(button, column, row);
-                column++;
 
+                button.setOnMouseClicked(e -> System.out.println(2));
+                column++;
                 if (column == columns) {
                     column = 0;
                     row++;
                 }
-
             }
         }
 
@@ -193,6 +194,11 @@ public class CharacterList extends Application {
         }
 
         characterVBox.getChildren().add(gridPane);
+    }
+
+
+    private ScrollBar getVerticalScrollBar(ScrollPane scrollPane) {
+        return (ScrollBar) scrollPane.lookup(".scroll-bar:vertical");
     }
 
     public static void main(String[] args) {

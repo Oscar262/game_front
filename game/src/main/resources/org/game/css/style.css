@@ -115,8 +115,29 @@
     -fx-background-color: linear-gradient(#ffd65b, #e68400);
     -fx-text-fill: #000000;
 }
-/*
-.root {
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #001a4d, #004080);
-}*/
+/* Estilo para la barra de desplazamiento vertical */
+.scroll-bar:vertical {
+    -fx-background-color: transparent;  /* Fondo de la barra */
+    -fx-background: transparent;         /* Fondo transparente para la barra */
+    -fx-padding: 10px 0;                 /* Espaciado entre el borde y el contenido */
+    -fx-control-inner-background: #1E1E1E; /* Color del fondo de la barra */
+    -fx-border-color:transparent;          /* Color del borde de la barra */
+}
 
+/* Estilo para la "thumb" (parte móvil de la barra) */
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #4A90E2; /* Color de la parte móvil de la barra */
+    -fx-background-insets: 2, 1;
+    -fx-background-radius: 5; /* Esquinas redondeadas */
+}
+
+/* Estilo para las flechas (arriba y abajo) */
+.scroll-bar:vertical .arrow {
+    -fx-background-color: #4A90E2; /* Color de las flechas */
+    -fx-shape: "M0,0 L0,1 L1,0 L0,0"; /* Formato de la flecha (opcional) */
+}
+
+/* Estilo para las flechas al pasar el ratón */
+.scroll-bar:vertical .arrow:hover {
+    -fx-background-color: #6CC4FF; /* Color de las flechas al pasar el ratón */
+}
