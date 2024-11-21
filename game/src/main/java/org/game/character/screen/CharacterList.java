@@ -3,15 +3,12 @@ package org.game.character.screen;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.effect.Effect;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import org.game.character.controller.CharacterController;
@@ -149,25 +146,25 @@ public class CharacterList extends Application {
                 characterImageView.setFitWidth(imageWidth);
 
                 Button button = new Button();
-                //TODO: poner hover
-                Image borderImage = new Image(getClass().getResourceAsStream("/org/game/images/login 1.png"));
-                BackgroundImage backgroundImage = new BackgroundImage(
-                        borderImage,
-                        BackgroundRepeat.NO_REPEAT, // Configura la repetición de la imagen
-                        BackgroundRepeat.NO_REPEAT,
-                        BackgroundPosition.CENTER,
-                        BackgroundSize.DEFAULT
-                );
 
-// Asigna el fondo al botón
-                button.setBackground(new Background(backgroundImage));
-                button.setGraphic(characterImageView);
+// Crear el StackPane para la imagen encima del botón
+                StackPane buttonContent = new StackPane();
+                buttonContent.getChildren().add(characterImageView); // Overlay encima de la imagen del personaje
 
-                button.setOnMouseClicked(e -> {
-                    Character characterApi = CharacterController.getCharacter(Config.ACCESS_TOKEN, character.getId());
-                    System.out.println(2);
-                });
+// Establecer el StackPane como el gráfico del botón
+                button.setGraphic(buttonContent);
+                button.setStyle("-fx-background-color: transparent;"); // Para hacer el fondo del botón transparente
 
+// Imagen que va encima del botón
+                Image overlayImage = new Image(getClass().getResourceAsStream("/org/game/images/1 none.png"));
+                ImageView overlayImageView = new ImageView(overlayImage);
+                overlayImageView.setFitWidth(275);
+                overlayImageView.setFitHeight(500);  // Ajustar tamaño según lo necesites
+                //overlayImageView.setPreserveRatio(true);
+
+                buttonContent.getChildren().add(overlayImageView);
+
+// Agregar el botón al GridPane
                 gridPane.add(button, column, row);
                 column++;
 
@@ -175,8 +172,10 @@ public class CharacterList extends Application {
                     column = 0;
                     row++;
                 }
+
             }
         }
+
 
         int totalCells = rows * columns;
         int filledCells = characters.size();
