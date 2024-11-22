@@ -142,24 +142,30 @@ public class CharacterList extends Application {
             if (character.getImage() != null) {
                 Image characterImage = Config.convertByteArrayToImage(character.getImage());
                 ImageView characterImageView = new ImageView(characterImage);
-                characterImageView.setFitHeight(500);
-                characterImageView.setFitWidth(imageWidth);
+                characterImageView.setFitHeight(500); // Ajusta el tamaño de la imagen del personaje
+                characterImageView.setFitWidth(275); // Ajusta el ancho de la imagen del personaje
 
+                // Imagen del borde
+                Image borderImage = new Image(getClass().getResourceAsStream("/org/game/images/1 none.png"));
+                ImageView borderImageView = new ImageView(borderImage);
+                borderImageView.setFitHeight(520); // Un poco más grande que el botón
+                borderImageView.setFitWidth(295); // Ajusta según el tamaño del borde
+
+                // Crear un botón transparente con la imagen del personaje
                 Button button = new Button();
-                StackPane buttonContent = new StackPane();
-                buttonContent.getChildren().add(characterImageView);
-
-                button.setGraphic(buttonContent);
                 button.setStyle("-fx-background-color: transparent;");
+                button.setGraphic(characterImageView);
 
-                // Asegurarse de que el botón ocupe todo el espacio disponible
-                GridPane.setHgrow(button, Priority.ALWAYS);
-                GridPane.setVgrow(button, Priority.ALWAYS);
+                // Crear un StackPane para superponer el borde y el botón
+                StackPane buttonWithBorder = new StackPane();
+                buttonWithBorder.getChildren().addAll(borderImageView, button); // La imagen del borde debajo del botón
+                buttonWithBorder.setAlignment(Pos.CENTER); // Asegurar alineación
 
-                // Agregar el botón al grid
-                gridPane.add(button, column, row);
-
+                // Configurar la acción al hacer clic en el botón
                 button.setOnMouseClicked(e -> System.out.println("Imagen clickeada"));
+
+                // Agregar el StackPane al GridPane
+                gridPane.add(buttonWithBorder, column, row);
 
                 column++;
                 if (column == columns) {
