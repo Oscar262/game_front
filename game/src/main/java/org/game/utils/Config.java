@@ -18,7 +18,7 @@ import java.sql.Time;
 
 public class Config {
 
-    public static String ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvcy5zYW5hdi4yNkBnbWFpbC5jb20iLCJpYXQiOjE3MzIxOTY3ODIsImV4cCI6MTczMjI4MzE4Mn0.aRWyApVCDm21Frgkbii0VMAYTH1BhEoNdBv0xBqewNRNXlcRCqiqgU7nXGjb6FVptnSXLwqxbu1ijan0MyDwxw";
+    public static String ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvcy5zYW5hdi4yNkBnbWFpbC5jb20iLCJpYXQiOjE3MzIyODQzNzYsImV4cCI6MTczMjM3MDc3Nn0.IJrnVgCQtq_w3euzim5nL62foMEyez6I4uv3-i1oJADlPyk1oHnJNXPOZX0liLs4vD5W3vafsh6WdWFOM_1z7w";
 
     private static final int NUM_POINTS = 5;
     private static final double POINT_RADIUS = 7;

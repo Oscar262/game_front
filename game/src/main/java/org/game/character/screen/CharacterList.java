@@ -121,7 +121,7 @@ public class CharacterList extends Application {
 
     private void showCharacters(VBox characterVBox, List<Character> characters, double windowWidth, List<Button> charactersButtons) {
         // Calcular el número de columnas basándose en el tamaño de la ventana
-        int columns = 4; // Ancho de cada imagen (275px) y el espacio disponible en la ventana
+        int columns = 3; // Ancho de cada imagen (275px) y el espacio disponible en la ventana
         int row = 0;
         int column = 0;
 
@@ -146,10 +146,10 @@ public class CharacterList extends Application {
                 characterImageView.setFitWidth(275); // Ajusta el ancho de la imagen del personaje
 
                 // Imagen del borde
-                Image borderImage = new Image(getClass().getResourceAsStream("/org/game/images/1 none.png"));
+                Image borderImage = new Image(getClass().getResourceAsStream("/org/game/images/silver.png"));
                 ImageView borderImageView = new ImageView(borderImage);
-                borderImageView.setFitHeight(520); // Un poco más grande que el botón
-                borderImageView.setFitWidth(295); // Ajusta según el tamaño del borde
+                borderImageView.setFitHeight(538);// Un poco más grande que el botón
+                borderImageView.setFitWidth(478); // Ajusta según el tamaño del borde
 
                 // Crear un botón transparente con la imagen del personaje
                 Button button = new Button();
@@ -159,7 +159,7 @@ public class CharacterList extends Application {
 
                 // Crear un StackPane para superponer el borde y el botón
                 StackPane buttonWithBorder = new StackPane();
-                buttonWithBorder.getChildren().addAll(borderImageView, button); // La imagen del borde debajo del botón
+                buttonWithBorder.getChildren().addAll(button, borderImageView); // La imagen del borde debajo del botón
                 buttonWithBorder.setAlignment(Pos.CENTER); // Asegurar alineación
 
                 // Configurar la acción al hacer clic en el botón

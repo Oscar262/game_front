@@ -19,7 +19,7 @@ public class CharacterController {
     private static final String URL = "http://localhost:8080";
 
     public static Page<Character> getCharacters(String accessToken, int offset) {
-        String apiUrl = URL + "/character?limit=8&offset=" + offset;
+        String apiUrl = URL + "/character?limit=6&offset=" + offset;
         HttpClient client = HttpClient.newHttpClient();
 
         Page<Character> characterPage = null;
