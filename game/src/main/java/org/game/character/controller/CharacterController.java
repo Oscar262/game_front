@@ -12,20 +12,21 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
 
 public class CharacterController {
 
     private static final String URL = "http://localhost:8080";
 
-    public static Page<Character> getCharacters(String accessToken, int offset) {
-        String apiUrl = URL + "/character?limit=6&offset=" + offset;
+    public static Page<Character> getCharacters(String accessToken, int offset, String textField) {
+        StringBuilder apiUrl = new StringBuilder(URL).append("/character?limit=6&offset=" + offset);
+        if (textField != null && !textField.isBlank())
+            apiUrl.append("&name=eq:" + textField);
         HttpClient client = HttpClient.newHttpClient();
 
         Page<Character> characterPage = null;
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(apiUrl))
+                    .uri(new URI(apiUrl.toString()))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + accessToken)
                     .GET()
