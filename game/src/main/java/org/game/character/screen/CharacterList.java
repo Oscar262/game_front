@@ -156,6 +156,7 @@ public class CharacterList extends Application {
                 button.setStyle("-fx-background-color: transparent;");
                 button.setGraphic(characterImageView);
 
+
                 // Crear un StackPane para superponer el borde y el botón
                 StackPane buttonWithBorder = new StackPane();
                 buttonWithBorder.getChildren().addAll(borderImageView, button); // La imagen del borde debajo del botón
