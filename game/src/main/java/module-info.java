@@ -20,6 +20,7 @@ module org.game {
     requires annotations;
     requires static lombok;
     requires java.sql;
+    requires javafx.graphics;
 
 
     opens org.game to javafx.fxml;

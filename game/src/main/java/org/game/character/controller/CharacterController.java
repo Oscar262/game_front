@@ -83,4 +83,39 @@ public class CharacterController {
         }
         return character;
     }
+    public static Character newCharacter(String accessToken) {
+        String apiUrl = URL + "/character";
+        HttpClient client = HttpClient.newHttpClient();
+        Character character = null;
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(apiUrl))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .POST(HttpRequest.BodyPublishers.noBody()) // POST sin body
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                // Usamos Jackson igual que en getCharacters
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.registerModule(new JavaTimeModule());
+                objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+                character = objectMapper.readValue(response.body(), Character.class);
+            } else {
+                System.err.println("Error al crear personaje: " + response.statusCode() + " - " + response.body());
+            }
+
+        } catch (URISyntaxException e) {
+            System.err.println("URL de la API inválida: " + e.getMessage());
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error al realizar la solicitud HTTP: " + e.getMessage());
+        }
+
+        return character;
+    }
+
 }
