@@ -28,7 +28,7 @@ public class Character {
     @JsonProperty("last_name")
     private String lastName;
 
-    private byte[] image;
+    private Map<Long, byte[]> image;
 
     private Long level;
 

@@ -240,7 +240,7 @@ public class CharacterList extends Application {
 
         for (Character character : characters) {
             if (character.getImage() != null) {
-                Image characterImage = Config.convertByteArrayToImage(character.getImage());
+                Image characterImage = Config.convertByteArrayToImage(character.getImage().get(1));
                 ImageView characterImageView = new ImageView(characterImage);
                 characterImageView.setFitHeight(500); // Ajusta el tamaño de la imagen del personaje
                 characterImageView.setFitWidth(275); // Ajusta el ancho de la imagen del personaje

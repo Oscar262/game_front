@@ -83,17 +83,19 @@ public class CharacterController {
         }
         return character;
     }
+
     public static Character newCharacter(String accessToken) {
         String apiUrl = URL + "/character";
         HttpClient client = HttpClient.newHttpClient();
         Character character = null;
 
         try {
+
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(apiUrl))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + accessToken)
-                    .POST(HttpRequest.BodyPublishers.noBody()) // POST sin body
+                    .POST(HttpRequest.BodyPublishers.noBody())
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
