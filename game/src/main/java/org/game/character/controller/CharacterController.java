@@ -38,7 +38,11 @@ public class CharacterController {
             objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
             if (response.statusCode() == 200) {
                 // Deserializar la respuesta JSON en un objeto Page<Character>
-                characterPage = objectMapper.readValue(response.body(), objectMapper.getTypeFactory().constructParametricType(Page.class, Character.class));
+                try {
+                    characterPage = objectMapper.readValue(response.body(), objectMapper.getTypeFactory().constructParametricType(Page.class, Character.class));
+                }catch (Exception e) {
+                    System.err.println(e.getMessage());
+                }
             } else {
                 System.err.println("Error al obtener personajes: " + response.body());
             }
@@ -71,7 +75,11 @@ public class CharacterController {
             objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
             if (response.statusCode() == 200) {
                 // Deserializar la respuesta JSON en un objeto Page<Character>
-                character = objectMapper.readValue(response.body(), Character.class);
+                try {
+                    character = objectMapper.readValue(response.body(), Character.class);
+                }catch (Exception e) {
+                    System.err.println(e.getMessage());
+                }
             } else {
                 System.err.println("Error al obtener personajes: " + response.body());
             }
@@ -106,7 +114,11 @@ public class CharacterController {
                 objectMapper.registerModule(new JavaTimeModule());
                 objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-                character = objectMapper.readValue(response.body(), Character.class);
+                try {
+                    character = objectMapper.readValue(response.body(), Character.class);
+                }catch (Exception e) {
+                    System.err.println(e.getMessage());
+                }
             } else {
                 System.err.println("Error al crear personaje: " + response.statusCode() + " - " + response.body());
             }

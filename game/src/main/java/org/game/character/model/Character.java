@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.game.utils.Pair;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,9 @@ public class Character {
     @JsonProperty("last_name")
     private String lastName;
 
-    private Map<Long, byte[]> image;
+    private Map<Long, Pair<Boolean, byte[]>> image;
+
+    private Pair<Long, String> imageActive;
 
     private Long level;
 
@@ -148,7 +151,8 @@ public class Character {
 
     public enum Gender {
         MALE,
-        FEMALE
+        FEMALE,
+        OTHER
     }
 
 }

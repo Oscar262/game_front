@@ -51,22 +51,23 @@ public class SingleCharacter extends Application {
 
         //CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        Character character = CharacterController.newCharacter(Config.ACCESS_TOKEN);
-        if (character != null && character.getImage() != null) {
-            for (int i = 1; i < 7; i++) {
+            Character character = CharacterController.newCharacter(Config.ACCESS_TOKEN);
+            if (character != null && character.getImage() != null) {
+                //for (int i = 1; i < 7; i++) {
+//
+                //    Map<Long, byte[]> imageBytes = character.getImage();
+                //    Image image = new Image(new ByteArrayInputStream(imageBytes.get((long) i)));
+                //    int col = i % 3;
+                //    int row = i / 3;
+                //    Platform.runLater(() -> {
+                //        ImageView imageView = new ImageView(image);
+                //        imageView.setFitWidth(width);
+                //        imageView.setFitHeight(height);
+                //        imageView.setPreserveRatio(true);
+                //        gridPane.add(imageView, col, row);
+                //    });
+                //}
 
-                Map<Long, byte[]> imageBytes = character.getImage();
-                Image image = new Image(new ByteArrayInputStream(imageBytes.get((long) i)));
-                int col = i % 3;
-                int row = i / 3;
-                Platform.runLater(() -> {
-                    ImageView imageView = new ImageView(image);
-                    imageView.setFitWidth(width);
-                    imageView.setFitHeight(height);
-                    imageView.setPreserveRatio(true);
-                    gridPane.add(imageView, col, row);
-                });
-            }
         }
     }
 

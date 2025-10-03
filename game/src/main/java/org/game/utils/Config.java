@@ -13,12 +13,15 @@ import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.sql.Time;
+import java.util.Base64;
 
 public class Config {
 
-    public static String ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvcy5zYW5hdi4yNkBnbWFpbC5jb20iLCJpYXQiOjE3NTkzODgzOTYsImV4cCI6MTc1OTQ3NDc5Nn0.bVoYV1znFsXnS5qYVsmVIRPkrrTra6-mAI9ZIpfPEU4Ld9xjZbGjUSPXUnJczeegFFli42Nu6p6s0XUD_pGudQ";
+    public static String ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvcy5zYW5hdi4yNkBnbWFpbC5jb20iLCJpYXQiOjE3NTk1MDExMDEsImV4cCI6MTc1OTU4NzUwMX0.tBoF1g3X6KELwm_DdaJ_GkmpLv9TaCJXnNYadpF3EJFLIHVdkradkY8eyfRS-0Eu0P3H4vSnpZkOtnbRQBNiFg";
 
     private static final int NUM_POINTS = 5;
     private static final double POINT_RADIUS = 7;
@@ -26,6 +29,19 @@ public class Config {
     private static final double OVAL_SCALE_Y = 0.5;
     private static final double CIRCLE_SCALE_X = 2.5;
     private static final double CIRCLE_SCALE_Y = 2.5;
+
+
+    public static Image decodeBase64ToFXImage(String base64) {
+        try {
+            byte[] bytes = Base64.getDecoder().decode(base64);
+            // Intenta forzar que JavaFX interprete la imagen
+            return new Image(new ByteArrayInputStream(bytes), 0, 0, true, true);
+        } catch (Exception e) {
+            System.out.println("Error decodificando imagen: " + e.getMessage());
+            return new Image("/org/game/images/home.jpeg"); // fallback
+        }
+    }
+
 
     public static Image convertByteArrayToImage(byte[] imageData) {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageData);
