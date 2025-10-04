@@ -3,37 +3,52 @@ package org.game.character.screen;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.game.character.controller.CharacterController;
 import org.game.character.model.Character;
 import org.game.utils.Config;
 import org.game.utils.Page;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class CharacterList extends Application {
 
-    private TilePane characterTilePane;
+    private GridPane characterGrid;
     private ScrollPane scrollPane;
     private TextField searchField;
+    private ProgressIndicator loadingIndicator;
 
     private List<ToggleButton> typeButtons = new ArrayList<>();
-    private List<CheckMenuItem> subtypeItems = new ArrayList<>();
-
     private boolean allLoaded = false;
     private int currentPage = 0;
     private CompletableFuture<Void> currentLoadingTask;
+    private volatile boolean taskActive = false;
     private boolean flipAllState = false;
+    private boolean loading = false;
+
+    private static final int CARDS_PER_ROW = 3;
+    private static final double CARD_WIDTH = 350;
+    private static final double CARD_HEIGHT = 450;
+    private static final double GRID_GAP = 20;
+
+    private ScheduledExecutorService autoLoadExecutor;
 
     @Override
     public void start(Stage primaryStage) {
@@ -41,23 +56,20 @@ public class CharacterList extends Application {
         // Fondo
         ImageView background = new ImageView(new Image(getClass().getResourceAsStream("/org/game/images/characters.jpeg")));
         background.setPreserveRatio(false);
-        background.setFitWidth(1200);
-        background.setFitHeight(800);
 
-        // StackPane principal: fondo + contenido
         StackPane root = new StackPane();
         root.getChildren().add(background);
 
         // Buscador y filtros
         HBox searchBox = new HBox(10);
         searchBox.setAlignment(Pos.CENTER_LEFT);
-        searchBox.setPadding(new Insets(20));
+        searchBox.setPadding(new Insets(30, 40, 30, 40));
 
         searchField = new TextField();
         searchField.setPromptText("Nombre del personaje...");
 
-        // Filtros de tipo
-        HBox typeFilterBox = new HBox(10);
+        HBox typeFilterBox = new HBox(15);
+        typeFilterBox.setPadding(new Insets(0, 0, 0, 10));
         String[] typeNames = {"Tipo1", "Tipo2", "Tipo3"};
         String[] typeImages = {"/org/game/images/744006.png", "/org/game/images/744006.png", "/org/game/images/744006.png"};
 
@@ -83,19 +95,13 @@ public class CharacterList extends Application {
             typeFilterBox.getChildren().add(btn);
         }
 
-        // Botones Buscar y Voltear
         Button searchButton = new Button("Buscar");
-        searchButton.setOnAction(e -> {
-            if (currentLoadingTask != null && !currentLoadingTask.isDone()) {
-                currentLoadingTask.cancel(true);
-            }
-            applyFilters();
-        });
+        searchButton.setOnAction(e -> applyFilters());
 
         Button flipAllButton = new Button("Voltear Todas");
         flipAllButton.setOnAction(e -> {
             flipAllState = !flipAllState;
-            characterTilePane.getChildren().forEach(node -> {
+            characterGrid.getChildren().forEach(node -> {
                 if (node instanceof VBox) {
                     VBox card = (VBox) node;
                     FlippableImageView img = (FlippableImageView) card.getChildren().get(0);
@@ -106,33 +112,60 @@ public class CharacterList extends Application {
 
         searchBox.getChildren().addAll(searchField, typeFilterBox, searchButton, flipAllButton);
 
-        // Contenedor de personajes
-        characterTilePane = new TilePane();
-        characterTilePane.setHgap(160);
-        characterTilePane.setVgap(160);
-        characterTilePane.setPadding(new Insets(160));
-        characterTilePane.setPrefColumns(3);
-        characterTilePane.setTileAlignment(Pos.CENTER);
-        characterTilePane.setPrefTileWidth(200);
-        characterTilePane.setPrefTileHeight(250);
-        characterTilePane.setStyle("-fx-background-color: transparent;"); // transparente para que se vea el fondo
+        // Grid de personajes
+        characterGrid = new GridPane();
+        characterGrid.setAlignment(Pos.TOP_CENTER);
 
-        scrollPane = new ScrollPane(characterTilePane);
+        scrollPane = new ScrollPane(characterGrid);
         scrollPane.setFitToWidth(true);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;"); // transparente
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
 
-        scrollPane.vvalueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal.doubleValue() > 0.9 && !allLoaded) {
-                loadCharacters(currentPage + 1);
+        final double SIDE_MARGIN = 30; // margen mínimo desde los bordes de la pantalla
+
+        characterGrid.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+            double totalWidth = newWidth.doubleValue();
+            int numColumns = CARDS_PER_ROW;
+            double totalCardWidth = numColumns * CARD_WIDTH;
+
+            double remainingSpace = totalWidth - totalCardWidth;
+            double hgap = remainingSpace / (numColumns + 1);
+            if (hgap < GRID_GAP) hgap = GRID_GAP;
+            characterGrid.setHgap(hgap);
+
+            double scrollbarWidth = 15;
+            for (Node n : scrollPane.lookupAll(".scroll-bar")) {
+                if (n instanceof ScrollBar) {
+                    ScrollBar sb = (ScrollBar) n;
+                    if (sb.getOrientation() == Orientation.VERTICAL) {
+                        scrollbarWidth = sb.getWidth();
+                        break;
+                    }
+                }
             }
+
+            double leftPadding = SIDE_MARGIN;
+            double rightPadding = SIDE_MARGIN + scrollbarWidth / 2;
+            characterGrid.setPadding(new Insets(30, rightPadding, 30, leftPadding));
         });
 
-        VBox mainContainer = new VBox(10, searchBox, scrollPane);
+        scrollPane.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL, event -> {
+            double deltaY = event.getDeltaY() * 4;
+            scrollPane.setVvalue(scrollPane.getVvalue() - deltaY / characterGrid.getHeight());
+            event.consume();
+        });
+
+        loadingIndicator = new ProgressIndicator();
+        loadingIndicator.setVisible(false);
+
+        StackPane scrollStack = new StackPane(scrollPane, loadingIndicator);
+        StackPane.setAlignment(loadingIndicator, Pos.CENTER);
+
+        VBox mainContainer = new VBox(15, searchBox, scrollStack);
         mainContainer.setAlignment(Pos.TOP_CENTER);
         mainContainer.setFillWidth(true);
-        mainContainer.setPadding(new Insets(10));
-        mainContainer.setStyle("-fx-background-color: transparent;"); // transparente también
+        mainContainer.setPadding(new Insets(20, 0, 20, 0));
 
         root.getChildren().add(mainContainer);
 
@@ -146,69 +179,105 @@ public class CharacterList extends Application {
 
         primaryStage.show();
 
+        // Carga inicial
         loadCharacters(0);
+
+        // Precarga automática en segundo plano cada 2 segundos si hay más por cargar
+        autoLoadExecutor = Executors.newSingleThreadScheduledExecutor();
+        autoLoadExecutor.scheduleWithFixedDelay(() -> {
+            if (!allLoaded && !loading) {
+                loadCharacters(currentPage + 1);
+            }
+        }, 2, 2, TimeUnit.SECONDS);
 
         primaryStage.setOnCloseRequest(e -> {
             if (currentLoadingTask != null && !currentLoadingTask.isDone()) {
+                taskActive = false;
                 currentLoadingTask.cancel(true);
             }
+            autoLoadExecutor.shutdownNow();
         });
     }
 
     private void applyFilters() {
         currentPage = 0;
         allLoaded = false;
-        characterTilePane.getChildren().clear();
+        characterGrid.getChildren().clear();
         loadCharacters(0);
     }
 
     private void loadCharacters(int page) {
-        String nameFilter = searchField.getText();
+        if (allLoaded || loading) return;
 
-        List<String> selectedTypes = new ArrayList<>();
-        for (ToggleButton btn : typeButtons) if (btn.isSelected()) selectedTypes.add((String) btn.getUserData());
+        loading = true;
+        loadingIndicator.setVisible(true);
+
+        String nameFilter = searchField.getText();
+        List<String> selectedTypes = typeButtons.stream()
+                .filter(ToggleButton::isSelected)
+                .map(btn -> (String) btn.getUserData())
+                .collect(Collectors.toList());
+
+        if (currentLoadingTask != null && !currentLoadingTask.isDone()) {
+            taskActive = false;
+        }
+
+        taskActive = true;
 
         currentLoadingTask = CompletableFuture.runAsync(() -> {
-            List<Character> newCharacters = fetchCharactersFromServer(page, nameFilter, selectedTypes, new ArrayList<>());
+            Page<Character> newCharacters = fetchCharactersFromServer(page, nameFilter, selectedTypes);
+
+            if (!taskActive) return;
 
             Platform.runLater(() -> {
-                if (newCharacters.isEmpty()) allLoaded = true;
-                else {
-                    showCharacters(newCharacters);
+                if (!taskActive) return;
+
+                if (newCharacters.isLast()) {
+                    allLoaded = true;
+                } else {
                     currentPage = page;
                 }
+                showCharacters(newCharacters.getData());
+
+                loading = false;
+                loadingIndicator.setVisible(false);
             });
         });
     }
 
-    private List<Character> fetchCharactersFromServer(int page, String name, List<String> types, List<String> subtypes) {
+    private Page<Character> fetchCharactersFromServer(int page, String name, List<String> types) {
         int offset = page * 6;
-        Page<Character> characterPage = CharacterController.getCharacters(Config.ACCESS_TOKEN, offset, name);
-        return characterPage != null && characterPage.getData() != null ? characterPage.getData() : new ArrayList<>();
+        return CharacterController.getCharacters(Config.ACCESS_TOKEN, offset, name);
     }
 
     private void showCharacters(List<Character> characters) {
-        for (Character c : characters) {
+        int startIndex = characterGrid.getChildren().size();
+        for (int i = 0; i < characters.size(); i++) {
+            Character c = characters.get(i);
+
             VBox card = new VBox(5);
             card.setAlignment(Pos.CENTER);
-            card.setStyle("-fx-background-color: transparent;"); // transparente
-            card.setPadding(new Insets(0));
+            card.setStyle("-fx-background-color: transparent;");
+            card.setPadding(new Insets(10));
 
-            byte[] frontBytes = Base64.getDecoder().decode(c.getImageActive().getValue());
             Image frontImage = Config.decodeBase64ToFXImage(c.getImageActive().getValue());
             Image backImage = new Image(getClass().getResourceAsStream("/org/game/images/home.jpeg"));
 
             FlippableImageView imageView = new FlippableImageView(frontImage, backImage);
-            imageView.setFitWidth(350);
-            imageView.setFitHeight(350);
+            imageView.setFitWidth(CARD_WIDTH);
+            imageView.setFitHeight(CARD_HEIGHT);
             imageView.setFlipped(flipAllState);
             imageView.setOnMouseClicked(e -> imageView.flip());
 
             Label nameLabel = new Label(c.getName());
-            nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;"); // visible sobre fondo
+            nameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
 
             card.getChildren().addAll(imageView, nameLabel);
-            characterTilePane.getChildren().add(card);
+
+            int row = (startIndex + i) / CARDS_PER_ROW;
+            int col = (startIndex + i) % CARDS_PER_ROW;
+
+            characterGrid.add(card, col, row);
         }
     }
 

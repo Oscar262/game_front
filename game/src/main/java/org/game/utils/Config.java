@@ -21,7 +21,7 @@ import java.util.Base64;
 
 public class Config {
 
-    public static String ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvcy5zYW5hdi4yNkBnbWFpbC5jb20iLCJpYXQiOjE3NTk1MDExMDEsImV4cCI6MTc1OTU4NzUwMX0.tBoF1g3X6KELwm_DdaJ_GkmpLv9TaCJXnNYadpF3EJFLIHVdkradkY8eyfRS-0Eu0P3H4vSnpZkOtnbRQBNiFg";
+    public static String ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvcy5zYW5hdi4yNkBnbWFpbC5jb20iLCJpYXQiOjE3NTk1ODU2OTgsImV4cCI6MTc1OTY3MjA5OH0.AAxknRn3GJXrXA2gjEsZ_xwllGZO3BXBQwG3Eja69vuFc4CALCfGOg9hVKU0Jaikok25nqorAimG9CGdFTt9OA";
 
     private static final int NUM_POINTS = 5;
     private static final double POINT_RADIUS = 7;

@@ -31,7 +31,8 @@ public class Character {
 
     private Map<Long, Pair<Boolean, byte[]>> image;
 
-    private Pair<Long, String> imageActive;
+    @JsonProperty("image_activated")
+    private Pair<Boolean, String> imageActive;
 
     private Long level;
 
